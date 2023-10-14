@@ -74,7 +74,7 @@ async def callback_query(bot, call):
                                     reply_markup=keyboards('UsageBack'))
 
     if call.data.startswith('Usage.CPU'):
-        param = call.data.split('.')[-1]
+        param = call.data.split('.')[2]
 
         if param == 'Main':
             await bot.edit_message_text(cid, mid, '📈 CPU USAGE\n'
