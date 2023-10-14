@@ -11,18 +11,18 @@ def keyboards(keyboard):
         btn1 = InlineKeyboardButton('📀 DISK USAGE', callback_data='Usage.Disk')
         btn2 = InlineKeyboardButton('📊 MEMORY USAGE', callback_data='Usage.Memory')
         btn3 = InlineKeyboardButton('📈 CPU USAGE', callback_data='Usage.CPU.Main')
-        btn4 = InlineKeyboardButton('🔙 BACK', callback_data='Menu.Main')
-        btn5 = InlineKeyboardButton('❌ CLOSE', callback_data='Close')
+        btn_b = InlineKeyboardButton('🔙 BACK', callback_data='Menu.Main')
+        btn_c = InlineKeyboardButton('❌ CLOSE', callback_data='Close')
 
-        buttons = [[btn1], [btn2], [btn3], [btn4], [btn5]]
+        buttons = [[btn1], [btn2], [btn3], [btn_b], [btn_c]]
         kb = InlineKeyboardMarkup(buttons)
         return kb
 
     if keyboard == 'UsageBack':
-        btn1 = InlineKeyboardButton('🔙 BACK', callback_data='Usage.Main')
-        btn2 = InlineKeyboardButton('❌ CLOSE', callback_data='Close')
+        btn_b = InlineKeyboardButton('🔙 BACK', callback_data='Usage.Main')
+        btn_c = InlineKeyboardButton('❌ CLOSE', callback_data='Close')
 
-        buttons = [[btn1], [btn2]]
+        buttons = [[btn_b], [btn_c]]
         kb = InlineKeyboardMarkup(buttons)
         return kb
 
@@ -33,10 +33,10 @@ def keyboards(keyboard):
         btn4 = InlineKeyboardButton('⏲ 7', callback_data='Usage.CPU.7')
         btn5 = InlineKeyboardButton('⏲ 10', callback_data='Usage.CPU.10')
 
-        btn6 = InlineKeyboardButton('🔙 BACK', callback_data='Usage.Main')
-        btn7 = InlineKeyboardButton('❌ CLOSE', callback_data='Close')
+        btn_b = InlineKeyboardButton('🔙 BACK', callback_data='Usage.Main')
+        btn_c = InlineKeyboardButton('❌ CLOSE', callback_data='Close')
 
-        buttons = [[btn1, btn2, btn3, btn4, btn5], [btn6, btn7]]
+        buttons = [[btn1, btn2, btn3, btn4, btn5], [btn_b, btn_c]]
         kb = InlineKeyboardMarkup(buttons)
         return kb
 
@@ -83,13 +83,13 @@ async def callback_query(bot, call):
                                         reply_markup=keyboards('TestTimes'))
 
         else:
-            param = float(param)
+            test_time = float(param)
 
             await bot.edit_message_text(cid, mid, '📈 CPU USAGE\n'
                                                   '\n'
                                                   '⏳ Testing, wait ...')
 
-            cpu = psutil.cpu_percent(param)
+            cpu = psutil.cpu_percent(test_time)
 
             await bot.edit_message_text(cid, mid, f'📈 CPU USAGE\n'
                                                   f'\n'
