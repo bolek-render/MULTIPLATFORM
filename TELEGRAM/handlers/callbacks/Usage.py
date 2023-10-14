@@ -58,8 +58,8 @@ async def callback_query(bot, call):
         await bot.edit_message_text(cid, mid, f'📀 DISK USAGE\n'
                                               f'\n'
                                               f'Total : {convert_size(disk.total)}\n'
-                                              f'Free : {convert_size(disk.free)}\n'
-                                              f'Used : {convert_size(disk.used)}',
+                                              f'Used : {convert_size(disk.used)}\n'
+                                              f'Free : {convert_size(disk.free)}',
                                     reply_markup=keyboards('UsageBack'))
 
     if call.data == 'Usage.Memory':
