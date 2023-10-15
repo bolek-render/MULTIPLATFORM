@@ -3,17 +3,13 @@ import DATA.globals as cg
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
+
 path = cg.PATH
+show_path = cg.PATH.split('\\')[-1]
+show_path = f'\\{show_path}'
 
 
 def keyboards(keyboard):
-    if keyboard == '':
-        btn_b = InlineKeyboardButton('🔙 BACK', callback_data='')
-        btn_c = InlineKeyboardButton('❌ CLOSE', callback_data='Close')
-        buttons = [[btn_b], [btn_c]]
-
-        kb = InlineKeyboardMarkup(buttons)
-        return kb
 
     if keyboard == 'ListDir':
         global path
@@ -53,22 +49,35 @@ def keyboards(keyboard):
 
 @Client.on_callback_query(filters.regex(r'^File') | filters.regex(r'^file') | filters.regex(r'^folder'))
 async def callback_query(bot, call):
-    global path
+    global path, show_path
     cid = call.message.chat.id
     mid = call.message.id
 
     if call.data == 'File.Main':
-        await bot.edit_message_text(cid, mid, 'Your filesystem',
+        await bot.edit_message_text(cid, mid, f'Your filesystem\n'
+                                              f'\n'
+                                              f'{show_path}',
                                     reply_markup=keyboards('ListDir'))
 
     if call.data.startswith('folder'):
         folder = call.data.split('.')[1]
         path = f'{path}\\{folder}'
-        await bot.edit_message_text(cid, mid, 'Your filesystem',
+        show_path = f'{show_path}\\{folder}'
+
+        await bot.edit_message_text(cid, mid, f'Your filesystem\n'
+                                              f'\n'
+                                              f'{show_path}',
                                     reply_markup=keyboards('ListDir'))
 
     if call.data == 'File.Back':
         path = path[0:path.rfind('\\')]
-        await bot.edit_message_text(cid, mid, 'Your filesystem',
+        show_path = show_path[0:show_path.rfind('\\')]
+
+        await bot.edit_message_text(cid, mid, f'Your filesystem\n'
+                                              f'\n'
+                                              f'{show_path}',
                                     reply_markup=keyboards('ListDir'))
 
+    if call.data.startswith('file'):
+        file = call.data.split('.')[1]
+        file_path = f'{path}\\{file}'
