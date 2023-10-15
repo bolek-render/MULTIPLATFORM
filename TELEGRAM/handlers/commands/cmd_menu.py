@@ -10,8 +10,9 @@ menu_msg = ('🤖 BOT MENU\n'
 def keyboards(keyboard):
     if keyboard == 'MenuMain':
         btn1 = InlineKeyboardButton('📋 SERVER USAGE STATS', callback_data='Usage.Main')
-        btn2 = InlineKeyboardButton('❌ CLOSE', callback_data='Close')
-        buttons = [[btn1], [btn2]]
+        btn2 = InlineKeyboardButton('📁 FILE SYSTEM', callback_data='File.Main')
+        btn_c = InlineKeyboardButton('❌ CLOSE', callback_data='Close')
+        buttons = [[btn1], [btn2], [btn_c]]
         kb = InlineKeyboardMarkup(buttons)
         return kb
 
