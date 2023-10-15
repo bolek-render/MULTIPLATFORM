@@ -28,14 +28,17 @@ async def video_msg(bot, msg):
 
 
 async def dl_progress(current, total, client, bm):
-    progress = float(f"{current * 100 / total:.1f}")
-    current = convert_size(current)
-    total = convert_size(total)
+    percent = 100 * (current / total)
+    bar = '▓' * int(percent / 5) + '░' * (20 - int(percent / 5))
 
-    if progress != 100.0:
-        await client.edit_message_text(bm.chat.id, bm.id, f'Downloading {progress}%'
-                                                          f'\n{current} / {total}')
-    else:
+    try:
+        await client.edit_message_text(bm.chat.id, bm.id, f'|{bar}|\n'
+                                                          f'{convert_size(current)} / {convert_size(total)}'
+                                                          f'  :  {percent:.2f}%')
+    except RPCError:
+        pass
+
+    if current == total:
         try:
             await client.edit_message_text(bm.chat.id, bm.id, f'Download complete')
         except RPCError:
@@ -50,13 +53,3 @@ async def callback_query(client, call):
 
     bm = await client.edit_message_text(cid, mid, 'Download starting')
     video_path = await video_message.download(progress=dl_progress, progress_args=(client, bm))
-
-    process = (
-        ffmpeg
-        .input(video_path, ss=7)
-        .output('out.png', vframes=1)
-        .run(capture_stdout=True, capture_stderr=True)
-    )
-    stderr = process[1].decode('utf-8')
-    print()
-    print(stderr)
