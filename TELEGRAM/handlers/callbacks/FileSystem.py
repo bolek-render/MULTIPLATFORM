@@ -108,7 +108,7 @@ async def callback_query(bot, call):
                                                   f'{show_path}\n'
                                                   f'Select what to do\n'
                                                   f'\n'
-                                                  f'{file}',
+                                                  f'💾 {file}',
                                         reply_markup=keyboards('FileOptions', file))
 
         if data == 'fileup':
@@ -125,7 +125,7 @@ async def callback_query(bot, call):
                                                   f'\n'
                                                   f'{show_path}\n'
                                                   f'\n'
-                                                  f'Are you sure to delete {file}',
+                                                  f'Are you sure to delete 💾 {file}',
                                         reply_markup=keyboards('DelConfirm', file))
 
         if data == 'filedelyes':
