@@ -7,3 +7,5 @@ RESET = '\033[0m'
 
 # PROJECT PATH
 PATH = None
+
+errors = None   # telegram error channel / group ID
