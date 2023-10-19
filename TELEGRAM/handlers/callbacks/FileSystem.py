@@ -2,6 +2,9 @@ import os
 import DATA.globals as cg
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.errors import RPCError
+from COMMON.ConvertSize import convert_size
+
 
 path = cg.PATH
 show_path = cg.PATH.split('\\')[-1]
@@ -64,6 +67,25 @@ def keyboards(keyboard, param=None):
         return kb
 
 
+async def up_progress(current, total, client, bm, file):
+    percent = 100 * (current / total)
+    bar = '▓' * int(percent / 5) + '░' * (20 - int(percent / 5))
+
+    try:
+        await client.edit_message_text(bm.chat.id, bm.id, f'Uploading {file}\n'
+                                                          f'|{bar}|\n'
+                                                          f'{convert_size(current)} / {convert_size(total)}'
+                                                          f'  :  {percent:.2f}%')
+    except RPCError:
+        pass
+
+    if current == total:
+        try:
+            await client.edit_message_text(bm.chat.id, bm.id, f'Upload complete {file}')
+        except RPCError:
+            pass
+
+
 @Client.on_callback_query(filters.regex(r'^File') | filters.regex(r'^file') | filters.regex(r'^folder'))
 async def callback_query(bot, call):
     global path, show_path
@@ -112,8 +134,8 @@ async def callback_query(bot, call):
                                         reply_markup=keyboards('FileOptions', file))
 
         if data == 'fileup':
-            await bot.edit_message_text(cid, mid, f'Uploading {file}')
-            await bot.send_document(cid, file_path, file_name=file)
+            bm = await bot.edit_message_text(cid, mid, f'Uploading {file}')
+            await bot.send_document(cid, file_path, file_name=file, progress=up_progress, progress_args=(bot, bm, file))
             await bot.answer_callback_query(call.id, f'✅🗳 {file} Uploaded', show_alert=True)
             await bot.edit_message_text(cid, mid, f'Current path\n'
                                                   f'\n'
