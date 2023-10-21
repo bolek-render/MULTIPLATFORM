@@ -7,5 +7,13 @@ RESET = '\033[0m'
 
 # PROJECT PATH
 PATH = None
+SS = None
 
-errors = None   # telegram error channel / group ID
+
+def set_slash():
+    global SS
+    if '/' in PATH:
+        SS = '/'
+
+    if '\\' in PATH:
+        SS = '\\'

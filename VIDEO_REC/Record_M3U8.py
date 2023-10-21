@@ -1,14 +1,18 @@
+import os
 import time
 import ffmpeg
+import DATA.globals as cg
 from threading import Thread
+from VIDEO_REC.GetVideoData import get_video_data
 from VIDEO_REC.globals import rec_procs
 
 
 class ReadStderr(Thread):
-    def __init__(self, process, fn):
+    def __init__(self, process, fn, video):
         Thread.__init__(self)
         self.process = process
         self.fn = fn
+        self.video = video
         self.line = None
         self.last_line = None
         self.penultimate_line = None
@@ -39,16 +43,18 @@ class ReadStderr(Thread):
 
             # RECORD FINISHED
             if 'time' in self.penultimate_line:
-                _parts = self.penultimate_line.split()
-                for _part in _parts:
-                    if 'time' in _part:
-                        self.record_time = _part.split('=')[1]
-
-                t_parts = self.record_time.split(':')
-                h = t_parts[0]
-                m = t_parts[1]
-                s = round(float(t_parts[2]))
-                self.record_time = f'{h}:{m}:{s}'
+                data = get_video_data(self.video)
+                pass
+                # _parts = self.penultimate_line.split()
+                # for _part in _parts:
+                #     if 'time' in _part:
+                #         self.record_time = _part.split('=')[1]
+                #
+                # t_parts = self.record_time.split(':')
+                # h = t_parts[0]
+                # m = t_parts[1]
+                # s = round(float(t_parts[2]))
+                # self.record_time = f'{h}:{m}:{s}'
 
             # ERROR 404
             if '404 Not Found' in self.last_line or '404 Not Found' in self.penultimate_line:
@@ -61,16 +67,23 @@ class ReadStderr(Thread):
 
 class RecordM3U8:
 
-    def __init__(self, url, fn):
+    def __init__(self, url, v_path, fn):
         self.url = url
+        self.v_path = v_path
         self.fn = fn
         self.process = None
+        self.video = f'{v_path}{cg.SS}{fn}'
+        self.try_folder()
+
+    def try_folder(self):
+        if not os.path.isdir(self.v_path):
+            os.makedirs(self.v_path)
 
     def run(self):
         self.process = (
             ffmpeg
             .input(self.url)
-            .output(filename=self.fn, codec='copy', t='10')
+            .output(filename=self.video, codec='copy', t='10')
             .overwrite_output()
         )
 
@@ -78,7 +91,7 @@ class RecordM3U8:
 
         rec_procs[self.fn] = self.process
 
-        reader = ReadStderr(self.process, self.fn)
+        reader = ReadStderr(self.process, self.fn, self.video)
         reader.start()
 
         # self.process.communicate(str.encode("q"))
