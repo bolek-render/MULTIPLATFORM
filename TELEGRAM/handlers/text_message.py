@@ -1,11 +1,8 @@
 import re
-import time
-
 import DATA.globals as cg
 from pyrogram import Client, filters
 from FUSI.ConnectionTest import connection_test
 from VIDEO_REC.Record_M3U8 import RecordM3U8
-from VIDEO_REC.globals import rec_procs
 
 
 @Client.on_message(filters.text)
@@ -23,9 +20,8 @@ async def video_msg(bot, msg):
             fn = f'{fn}.mp4'
 
             record = RecordM3U8(url, fn)
-            await record.run()
-            process = record.process
-            rec_procs[fn] = process
+            record.run()
+
             bm = await msg.reply(f'Trying to record : {rec_name}', disable_notification=True)
 
             code, err = connection_test(url)
@@ -42,4 +38,3 @@ async def video_msg(bot, msg):
             if code == -1000:
                 pass
                 bot.send_message(cg.errors, err)
-
