@@ -3,7 +3,7 @@ import time
 import ffmpeg
 import DATA.globals as cg
 from threading import Thread
-from VIDEO_REC.GetVideoData import get_video_data
+from VIDEO_REC.ReadyVideoHandler import VideoHandler
 from VIDEO_REC.globals import rec_procs
 
 
@@ -16,9 +16,22 @@ class ReadStderr(Thread):
         self.line = None
         self.last_line = None
         self.penultimate_line = None
+        self.time_line = None
         self.record_time = None
         self.error = None
         self.name = f'M3U8.RecReader : {fn}'
+
+    # def convert_time(self):
+    #     _parts = self.time_line()
+    #     for _part in _parts:
+    #         if 'time' in _part:
+    #             self.record_time = _part.split('=')[1]
+    #
+    #     t_parts = self.record_time.split(':')
+    #     h = t_parts[0]
+    #     m = t_parts[1]
+    #     s = round(float(t_parts[2]))
+    #     self.record_time = f'{h}:{m}:{s}'
 
     def run(self):
         self.line = self.process.stderr.readline()
@@ -36,25 +49,22 @@ class ReadStderr(Thread):
 
         # PROCESS FINISHED
         else:
+            print('rec finish')
             self.last_line = self.last_line.decode('utf-8')
             self.penultimate_line = self.penultimate_line.decode('utf-8')
-            # print(self.penultimate_line)
-            # print(self.last_line)
+            print(self.penultimate_line)
+            print(self.last_line)
 
             # RECORD FINISHED
-            if 'time' in self.penultimate_line:
-                data = get_video_data(self.video)
-                pass
-                # _parts = self.penultimate_line.split()
-                # for _part in _parts:
-                #     if 'time' in _part:
-                #         self.record_time = _part.split('=')[1]
-                #
-                # t_parts = self.record_time.split(':')
-                # h = t_parts[0]
-                # m = t_parts[1]
-                # s = round(float(t_parts[2]))
-                # self.record_time = f'{h}:{m}:{s}'
+            if 'time' in self.last_line:
+                self.time_line = self.last_line
+                vh = VideoHandler(self.fn, self.video)
+                vh.start()
+
+            elif 'time' in self.penultimate_line:
+                self.time_line = self.penultimate_line
+                vh = VideoHandler(self.fn, self.video)
+                vh.start()
 
             # ERROR 404
             if '404 Not Found' in self.last_line or '404 Not Found' in self.penultimate_line:
@@ -73,9 +83,7 @@ class RecordM3U8:
         self.fn = fn
         self.process = None
         self.video = f'{v_path}{cg.SS}{fn}'
-        self.try_folder()
 
-    def try_folder(self):
         if not os.path.isdir(self.v_path):
             os.makedirs(self.v_path)
 
@@ -83,7 +91,7 @@ class RecordM3U8:
         self.process = (
             ffmpeg
             .input(self.url)
-            .output(filename=self.video, codec='copy', t='10')
+            .output(filename=self.video, codec='copy', t='70')
             .overwrite_output()
         )
 

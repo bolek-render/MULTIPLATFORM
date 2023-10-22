@@ -1,9 +1,10 @@
 import os
 from pyrogram import Client, idle
+import TELEGRAM.globals as tg
 
 
 def start_telegram_bot():
-
+    from TELEGRAM.globals import BOT
     print("BOT STARTING...")
 
     bot = Client("DATA\MULTIPLATFORM",
@@ -12,6 +13,8 @@ def start_telegram_bot():
                  bot_token=os.environ["BOT_TOKEN"],
                  plugins=dict(root="TELEGRAM\handlers"),
                  max_concurrent_transmissions=4)
+
+    tg.BOT = bot
 
     try:
         bot.stop()
