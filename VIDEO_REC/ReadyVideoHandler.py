@@ -1,5 +1,5 @@
+import asyncio
 from threading import Thread
-
 from TELEGRAM.SendVideo import send_video
 # from TELEGRAM.globals import BOT
 from VIDEO_REC.GetVideoData import get_video_data
@@ -25,6 +25,8 @@ class VideoHandler(Thread):
             thumb = None        # clear memory
         else:
             thumbnails = None
+
+        # print(asyncio.get_event_loop())
 
         send_video(self.fn, self.video, data, thumbnails)
 

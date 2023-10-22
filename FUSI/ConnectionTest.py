@@ -20,9 +20,9 @@ def connection_test(fs_url):
     try:
         with requests.get(url, params=querystring, headers=headers) as response:
             if response.status_code == 200:
-                return 1, None
+                return 1, 'Recording'
             else:
-                return 0, None
+                return 0, 'Offline / pause / lag'
 
     except Exception as e:
         return -1000, (f'{fs_url}\n'

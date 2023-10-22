@@ -45,7 +45,7 @@ def send_video(fn, video, data, thumbnails=None):
                             progress=up_progress,
                             progress_args=(bot, tm, fn))
 
-    # thumbnails generation failed
+    # video size < 10 MB or thumbnails generation failed
     else:
         vm = bot.send_video(1794541520, video,
                             caption=caption,

@@ -4,7 +4,6 @@ import TELEGRAM.globals as tg
 
 
 def start_telegram_bot():
-    from TELEGRAM.globals import BOT
     print("BOT STARTING...")
 
     bot = Client("DATA\MULTIPLATFORM",

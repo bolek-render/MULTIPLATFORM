@@ -2,106 +2,64 @@ import os
 import time
 import ffmpeg
 import DATA.globals as cg
-from threading import Thread
-from VIDEO_REC.ReadyVideoHandler import VideoHandler
 from VIDEO_REC.globals import rec_procs
 
 
-class ReadStderr(Thread):
-    def __init__(self, process, fn, video):
-        Thread.__init__(self)
-        self.process = process
-        self.fn = fn
-        self.video = video
-        self.line = None
-        self.last_line = None
-        self.penultimate_line = None
-        self.time_line = None
-        self.record_time = None
-        self.error = None
-        self.name = f'M3U8.RecReader : {fn}'
+def record_m3u8(url, path, fn):
+    if not os.path.isdir(path):
+        os.makedirs(path)
 
-    # def convert_time(self):
-    #     _parts = self.time_line()
-    #     for _part in _parts:
-    #         if 'time' in _part:
-    #             self.record_time = _part.split('=')[1]
-    #
-    #     t_parts = self.record_time.split(':')
-    #     h = t_parts[0]
-    #     m = t_parts[1]
-    #     s = round(float(t_parts[2]))
-    #     self.record_time = f'{h}:{m}:{s}'
+    video = f'{path}{cg.SS}{fn}'
 
-    def run(self):
-        self.line = self.process.stderr.readline()
+    process = (
+        ffmpeg
+        .input(url)
+        .output(filename=video, codec='copy', t='20')
+        .overwrite_output()
+    )
 
-        while self.line != b'':
-            self.penultimate_line = self.last_line
-            self.last_line = self.line
-            try:
-                self.line = self.process.stderr.readline()
-            except ValueError:
-                time.sleep(3)
-                self.process.terminate()
-                del rec_procs[self.fn]
-                break
+    process = process.run_async(pipe_stdin=True, pipe_stderr=True)
 
-        # PROCESS FINISHED
-        else:
-            print('rec finish')
-            self.last_line = self.last_line.decode('utf-8')
-            self.penultimate_line = self.penultimate_line.decode('utf-8')
-            print(self.penultimate_line)
-            print(self.last_line)
+    rec_procs[fn] = process
 
-            # RECORD FINISHED
-            if 'time' in self.last_line:
-                self.time_line = self.last_line
-                vh = VideoHandler(self.fn, self.video)
-                vh.start()
+    line = process.stderr.readline()
+    last_line = None
+    penultimate_line = None
 
-            elif 'time' in self.penultimate_line:
-                self.time_line = self.penultimate_line
-                vh = VideoHandler(self.fn, self.video)
-                vh.start()
-
-            # ERROR 404
-            if '404 Not Found' in self.last_line or '404 Not Found' in self.penultimate_line:
-                self.error = '404 Not Found'
-
+    while line != b'':
+        # print(line)
+        penultimate_line = last_line
+        last_line = line
+        try:
+            line = process.stderr.readline()
+        except ValueError:
             time.sleep(3)
-            self.process.terminate()
-            del rec_procs[self.fn]
+            process.terminate()
+            del rec_procs[fn]
+            break
 
+    # PROCESS FINISHED
+    else:
+        last_line = last_line.decode('utf-8')
+        penultimate_line = penultimate_line.decode('utf-8')
 
-class RecordM3U8:
+        time.sleep(3)
+        process.terminate()
+        del rec_procs[fn]
 
-    def __init__(self, url, v_path, fn):
-        self.url = url
-        self.v_path = v_path
-        self.fn = fn
-        self.process = None
-        self.video = f'{v_path}{cg.SS}{fn}'
+        # print(penultimate_line)
+        # print(last_line)
 
-        if not os.path.isdir(self.v_path):
-            os.makedirs(self.v_path)
+        # RECORD FINISHED
+        if 'time' in last_line or 'time' in penultimate_line:
+            return True, None  # None można zamienić na czas z funkcji w poprzedniej wersji
 
-    def run(self):
-        self.process = (
-            ffmpeg
-            .input(self.url)
-            .output(filename=self.video, codec='copy', t='70')
-            .overwrite_output()
-        )
+        # ERROR 404
+        if '404 Not Found' in last_line or '404 Not Found' in penultimate_line:
+            return False, '404 Not Found'
 
-        self.process = self.process.run_async(pipe_stdin=True, pipe_stderr=True)
+    return False, 'Unknown error'
 
-        rec_procs[self.fn] = self.process
-
-        reader = ReadStderr(self.process, self.fn, self.video)
-        reader.start()
-
-        # self.process.communicate(str.encode("q"))
-        # time.sleep(3)
-        # self.process.terminate()
+# process.communicate(str.encode("q"))
+# time.sleep(3)
+# process.terminate()
