@@ -14,7 +14,7 @@ def record_m3u8(url, path, fn):
     process = (
         ffmpeg
         .input(url)
-        .output(filename=video, codec='copy', t='90')
+        .output(filename=video, codec='copy', t='20')
         .overwrite_output()
     )
 
@@ -38,24 +38,30 @@ def record_m3u8(url, path, fn):
             break
 
     # PROCESS FINISHED
-    else:
+    try:
         last_line = last_line.decode('utf-8')
         penultimate_line = penultimate_line.decode('utf-8')
+    except AttributeError:
+        pass
 
-        time.sleep(3)
-        process.terminate()
-        del rec_procs[fn]
+    time.sleep(3)
+    process.terminate()
+    del rec_procs[fn]
 
-        # print(penultimate_line)
-        # print(last_line)
+    # print(penultimate_line)
+    # print(last_line)
 
-        # RECORD FINISHED
+    # RECORD FINISHED
+    try:
         if 'time' in last_line or 'time' in penultimate_line:
             return True, video
 
         # ERROR 404
         if '404 Not Found' in last_line or '404 Not Found' in penultimate_line:
             return False, '404 Not Found'
+
+    except TypeError:
+        return False, 'Error reading lines in ffmpeg recording'
 
     return False, 'Unknown error'
 
