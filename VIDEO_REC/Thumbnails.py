@@ -3,48 +3,46 @@ import ffmpeg
 from PIL import Image, UnidentifiedImageError
 
 
-class Thumbnails:
-    def __init__(self, video, data):
-        self.video = video
-        self.duration = data['duration']
-        self.width = data['width']
-        self.height = data['height']
-        self.thumbnails = None
+def gen_thumbnails(video, data):
+    duration = data['duration']
+    width = data['width']
+    height = data['height']
+    thumbnails = None
 
-    def run(self):
-        if self.duration >= 20:
-            frame_step = int(self.duration / 16)
-            frames = []
-            thumbs = []
+    if duration >= 20:
+        frame_step = int(duration / 16)
+        frames = []
+        thumbs = []
 
-            for frame in range(int(frame_step / 2), self.duration + 1, frame_step):
-                frames.append(frame)
+        for frame in range(int(frame_step / 2), duration + 1, frame_step):
+            frames.append(frame)
 
-            for frame in frames:
+        for frame in frames:
+            out, err = (
+                ffmpeg
+                .input(video, ss=frame)
+                .output('pipe:', vframes=1, format='image2', vcodec='png', loglevel="quiet")
+                .global_args('-nostdin')
+                .run(capture_stdout=True)
+            )
 
-                out, err = (
-                    ffmpeg
-                    .input(self.video, ss=frame)
-                    .output('pipe:', vframes=1, format='image2', vcodec='png', loglevel="quiet")
-                    .global_args('-nostdin')
-                    .run(capture_stdout=True)
-                )
+            thumbs.append(io.BytesIO(out))
 
-                thumbs.append(io.BytesIO(out))
+        temp_thumbnails = Image.new('RGB', (width * 4, height * 4))
+        index = 0
 
-            thumbnails = Image.new('RGB', (self.width * 4, self.height * 4))
-            index = 0
+        for x in range(0, height * 4, height):
+            for y in range(0, width * 4, width):
+                try:
+                    image = Image.open(thumbs[index])
+                    temp_thumbnails.paste(image, (y, x))
+                except UnidentifiedImageError:
+                    pass
 
-            for x in range(0, self.height * 4, self.height):
-                for y in range(0, self.width * 4, self.width):
-                    try:
-                        image = Image.open(thumbs[index])
-                        thumbnails.paste(image, (y, x))
-                    except UnidentifiedImageError:
-                        pass
+                index += 1
 
-                    index += 1
+        thumbs.clear()  # clear memory
+        thumbnails = io.BytesIO()
+        temp_thumbnails.save(thumbnails, format='png')
 
-            thumbs.clear()      # clear memory
-            self.thumbnails = io.BytesIO()
-            thumbnails.save(self.thumbnails, format='png')
+    return thumbnails

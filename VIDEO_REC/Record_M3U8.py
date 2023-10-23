@@ -14,7 +14,7 @@ def record_m3u8(url, path, fn):
     process = (
         ffmpeg
         .input(url)
-        .output(filename=video, codec='copy', t='20')
+        .output(filename=video, codec='copy', t='90')
         .overwrite_output()
     )
 
@@ -27,7 +27,6 @@ def record_m3u8(url, path, fn):
     penultimate_line = None
 
     while line != b'':
-        # print(line)
         penultimate_line = last_line
         last_line = line
         try:
@@ -52,7 +51,7 @@ def record_m3u8(url, path, fn):
 
         # RECORD FINISHED
         if 'time' in last_line or 'time' in penultimate_line:
-            return True, None  # None można zamienić na czas z funkcji w poprzedniej wersji
+            return True, video
 
         # ERROR 404
         if '404 Not Found' in last_line or '404 Not Found' in penultimate_line:
