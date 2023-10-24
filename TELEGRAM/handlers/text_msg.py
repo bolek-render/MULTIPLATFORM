@@ -10,18 +10,29 @@ async def text_msg(bot, msg):
     text = str(msg.text)
     http_urls = re.findall(r'(https?://\S+)', text)
 
-    fn = None
+    fn_ffmpeg = None
+    fn_streamlink = None
     path = None
 
     for url in http_urls:
 
         # FUSI LINKS
         if 'ourpow' and ('m3u8' or 'flv') in url:
-            fn = url.split('/')[-2]
-            fn = f'{fn}.mp4'
+            fn_ffmpeg = url.split('/')[-2]
+            fn_ffmpeg = f'{fn_ffmpeg}.mp4'
             path = f'{cg.PATH}{cg.SS}VIDS{cg.SS}FUSI'
 
-        # RECORD LINK
-        if fn is not None:
+        # INSTA LINKS
+        if 'instagram' and 'mpd' in url:
+            fn_streamlink = f'insta.mp4'
+            path = f'{cg.PATH}{cg.SS}VIDS{cg.SS}INSTA'
 
-            await record_handler(url, path, fn, msg)
+        # RECORD LINK FFMPEG
+        if fn_ffmpeg is not None:
+
+            await record_handler(url, path, fn_ffmpeg, msg)
+
+        # RECORD LINK STREAMLINK
+        if fn_streamlink is not None:
+
+            pass
