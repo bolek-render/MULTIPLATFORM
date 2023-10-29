@@ -14,6 +14,7 @@ bot = BOT
 async def record_handler(url, path, fn, msg):
     rec_coro = asyncio.to_thread(record_m3u8, url, path, fn)
     rec_task = asyncio.create_task(rec_coro)
+
     await asyncio.sleep(0.1)
 
     rec_name = fn.split('.')[0]
