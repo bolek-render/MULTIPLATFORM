@@ -3,7 +3,6 @@ from TELEGRAM.globals import BOT, videos_target
 from pyrogram.errors import RPCError
 from COMMON.ConvertSize import convert_size
 
-
 bot = BOT
 last_update = float()
 
@@ -63,4 +62,4 @@ async def send_video(fn, video, data, msg, thumbnails=None, caption=None):
                                   progress=up_progress,
                                   progress_args=(bot, message, fn))
 
-    return vm
+    return vm.video.file_id, caption

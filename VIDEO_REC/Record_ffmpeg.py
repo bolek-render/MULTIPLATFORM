@@ -14,7 +14,7 @@ def record_m3u8(url, path, fn):
     process = (
         ffmpeg
         .input(url)
-        .output(filename=video, codec='copy', t='40')
+        .output(filename=video, codec='copy', t='20')
         .overwrite_output()
     )
 
